@@ -6,6 +6,8 @@ function App () {
   return (
     <div className='App'>
       <Banner />
+      <br />
+      <br />
       <img src={fullview} alt='full-background' className='full-view' />
     </div>
   )

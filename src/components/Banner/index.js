@@ -107,19 +107,20 @@ function Banner () {
   }
 
   const initBannerImages = (banner, parallax) => {
-    if (banner.current.childNodes && banner.current.childNodes.length) {
+    if (
+      banner.current &&
+      banner.current.childNodes &&
+      banner.current.childNodes.length
+    ) {
       const { width } = banner.current.getBoundingClientRect()
 
       Array.from(banner.current.childNodes).forEach((item, index) => {
         const img = item.childNodes[0]
-        if (width < breakpoint) {
-          initRectSmallScreen(index, img)
-        } else {
-          initRectNormalScreen(index, img, width)
-        }
-        if (parallax) {
-          makeBlurMoveEffect(img, index, parallax)
-        }
+
+        width < breakpoint
+          ? initRectSmallScreen(index, img)
+          : initRectNormalScreen(index, img, width)
+        parallax && makeBlurMoveEffect(img, index, parallax)
       })
     }
   }
@@ -152,7 +153,11 @@ function Banner () {
     endpoint.width = 0
     endpoint.x = 0
 
-    if (banner.current.childNodes && banner.current.childNodes.length > 0) {
+    if (
+      banner.current &&
+      banner.current.childNodes &&
+      banner.current.childNodes.length > 0
+    ) {
       Array.from(banner.current.childNodes).forEach((item, index) => {
         const img = item.childNodes[0]
         const { blur, x, y, rotate } = initConfig[index]
@@ -163,68 +168,85 @@ function Banner () {
   }
 
   const initBanner = () => initBannerImages(animateBanner)
-  const handleMouseEnter = event => {
-    const { width } = animateBanner.current.getBoundingClientRect()
-
-    endpoint.x = event.clientX
-    endpoint.width = width
-  }
-  const handleMousemove = event => {
-    const parallax = event.clientX - endpoint.x
-    const parallaxRatio = parallax / endpoint.width
-
-    initBannerImages(animateBanner, parallaxRatio)
-  }
-  const handleMouseout = () => resetBannerImagesEffect(animateBanner)
 
   useInterval(makeBlink, 5000, true)
   useEventListener('resize', initBanner)
   useEffect(() => {
-    initBanner()
+    const animateBannerDom = animateBanner.current
 
-    if (!animateBanner.current) return
+    const handleMouseEnter = event => {
+      const { width } = animateBannerDom.getBoundingClientRect()
 
-    animateBanner.current.addEventListener('mouseenter', handleMouseEnter)
-    animateBanner.current.addEventListener('mousemove', handleMousemove)
-    animateBanner.current.addEventListener('mouseout', handleMouseout)
+      endpoint.x = event.clientX
+      endpoint.width = width
+    }
+
+    const handleMousemove = event => {
+      const parallax = event.clientX - endpoint.x
+      const parallaxRatio = parallax / endpoint.width
+
+      initBannerImages(animateBanner, parallaxRatio)
+    }
+
+    const handleMouseleave = () => resetBannerImagesEffect(animateBanner)
+
+    if (animateBannerDom) {
+      initBanner()
+      animateBannerDom.addEventListener('mouseenter', handleMouseEnter)
+      animateBannerDom.addEventListener('mousemove', handleMousemove)
+      animateBannerDom.addEventListener('mouseleave', handleMouseleave)
+
+      return () => {
+        animateBannerDom.removeEventListener('mouseenter', handleMouseEnter)
+        animateBannerDom.removeEventListener('mousemove', handleMousemove)
+        animateBannerDom.removeEventListener('mouseleave', handleMouseleave)
+      }
+    }
   })
 
   return (
-    <div className='banner' ref={animateBanner}>
-      <div className='layer'>
-        <img
-          src={background}
-          data-width='3000'
-          data-height='250'
-          alt='background'
-        />
-      </div>
+    <>
+      <div className='banner' ref={animateBanner}>
+        <div className='layer'>
+          <img
+            src={background}
+            data-width='3000'
+            data-height='250'
+            alt='background'
+          />
+        </div>
 
-      <div className='layer' ref={animateGirl}>
-        <img src={girlEyeOpen} data-width='3000' data-height='275' alt='girl' />
-      </div>
+        <div className='layer' ref={animateGirl}>
+          <img
+            src={girlEyeOpen}
+            data-width='3000'
+            data-height='275'
+            alt='girl'
+          />
+        </div>
 
-      <div className='layer'>
-        <img src={hill} data-width='3000' data-height='250' alt='hill' />
-      </div>
+        <div className='layer'>
+          <img src={hill} data-width='3000' data-height='250' alt='hill' />
+        </div>
 
-      <div className='layer'>
-        <img
-          src={foreground}
-          data-width='3000'
-          data-height='250'
-          alt='foreground'
-        />
-      </div>
+        <div className='layer'>
+          <img
+            src={foreground}
+            data-width='3000'
+            data-height='250'
+            alt='foreground'
+          />
+        </div>
 
-      <div className='layer'>
-        <img src={fairy} data-width='3000' data-height='275' alt='fairy' />
-      </div>
+        <div className='layer'>
+          <img src={fairy} data-width='3000' data-height='275' alt='fairy' />
+        </div>
 
-      <div className='layer'>
-        <img src={leaf} data-width='3000' data-height='275' alt='leaf' />
+        <div className='layer'>
+          <img src={leaf} data-width='3000' data-height='275' alt='leaf' />
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
